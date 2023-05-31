@@ -37,7 +37,7 @@ public class ApiTokenFilter extends OncePerRequestFilter {
     }
 
     private Optional<String> parseApiToken(HttpServletRequest request) {
-        String token = request.getHeader("api_token");
+        String token = request.getHeader("Api-Token");
         if (StringUtils.hasText(token)) {
             return Optional.of(token);
         }
@@ -45,7 +45,6 @@ public class ApiTokenFilter extends OncePerRequestFilter {
     }
 
     private boolean validateApiToken(String token) {
-        log.info(apiToken);
         return token.equals(apiToken);
     }
 }

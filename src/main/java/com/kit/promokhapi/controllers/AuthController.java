@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/promo_kh/auth")
 public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;

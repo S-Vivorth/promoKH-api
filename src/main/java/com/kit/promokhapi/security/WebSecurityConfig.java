@@ -2,8 +2,6 @@ package com.kit.promokhapi.security;
 
 import com.kit.promokhapi.service.UserService;
 
-import javax.servlet.Filter;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,8 +61,9 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(accessTokenEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(apiTokenFilter(), (Class<? extends Filter>) UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth.antMatchers("/api/auth/**").permitAll().anyRequest().permitAll());
+        http.addFilterBefore(apiTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(accessTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

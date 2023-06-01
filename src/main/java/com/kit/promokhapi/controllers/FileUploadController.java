@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/upload")
+@RequestMapping("/promo_kh/upload")
 public class FileUploadController {
 
     private final S3Client s3Client;

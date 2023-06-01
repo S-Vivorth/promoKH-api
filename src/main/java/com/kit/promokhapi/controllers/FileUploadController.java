@@ -34,6 +34,12 @@ public class FileUploadController {
 
     @PostMapping("")
     public ResponseEntity<ResponseDTO<String>> uploadFile(@RequestPart("file") MultipartFile file) throws IOException {
+        // Check the number of files being uploaded
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), "Please select a file to upload.", null));
+        }
+
         // Check if the uploaded file is an image
         // Check the file's content type to determine if it's an image
         String contentType = file.getContentType();

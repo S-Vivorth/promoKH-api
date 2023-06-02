@@ -25,7 +25,7 @@ public class FileUploadController {
 
     private final S3Client s3Client;
     private final String bucketName;
-    private final long MAX_FILE_SIZE = DataSize.ofMegabytes(5).toBytes();
+    private final long MAX_FILE_SIZE = DataSize.ofMegabytes(10).toBytes();
 
     public FileUploadController(S3Client s3Client, @Value("${aws.bucketName}") String bucketName) {
         this.s3Client = s3Client;

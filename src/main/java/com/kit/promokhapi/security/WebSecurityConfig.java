@@ -61,7 +61,7 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(accessTokenEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.antMatchers("/api/auth/**").permitAll().anyRequest().permitAll());
+                .authorizeHttpRequests(auth -> auth.antMatchers("/promo_kh/auth/**").permitAll().anyRequest().permitAll());
         http.addFilterBefore(apiTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(accessTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 

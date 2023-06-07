@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @SpringBootApplication
 @EnableMongoRepositories
-public class PromokhApiApplication {
+public class  PromokhApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(PromokhApiApplication.class, args);
     }

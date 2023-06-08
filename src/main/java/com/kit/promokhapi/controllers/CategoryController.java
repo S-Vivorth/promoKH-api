@@ -17,8 +17,7 @@ public class CategoryController {
     
     // get all categories
     @GetMapping("promo_kh/category")
-    public List<Category> getAllCategories() {
-        return service.getAllCategories();
-    }
+    public List<Category> getAllCategories() { return service.getAllCategories();
+}
     
 }

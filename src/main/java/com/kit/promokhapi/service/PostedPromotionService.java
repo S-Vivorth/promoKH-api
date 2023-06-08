@@ -17,5 +17,4 @@ public class PostedPromotionService {
         return db.findAll();
     }
 
-
 }

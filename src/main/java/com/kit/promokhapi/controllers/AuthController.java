@@ -90,12 +90,6 @@ public class AuthController {
 
         throw new BadCredentialsException("invalid token");
     }
-
-    @GetMapping("public")
-    public String publicEndpoint() {
-        return "Hello from public endpoint!";
-    }
-
     @PostMapping("logout-all")
     public ResponseEntity<?> logoutAll(@RequestBody TokenDTO dto) {
         String refreshTokenString = dto.getRefreshToken();

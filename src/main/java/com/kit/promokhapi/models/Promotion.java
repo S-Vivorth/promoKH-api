@@ -15,17 +15,7 @@ public class Promotion {
     @Id
     private String id;
 
-    @DBRef
-    private User user;
-
-    @DBRef
-    private Category category;
-
-    @DBRef
-    private PromotionDetail promotionDetail;
-
-    @DBRef
-    private List<User> savedBy;
+    private String categoryId;
 
     private String title;
     private Double oldPrice;
@@ -38,13 +28,10 @@ public class Promotion {
     private LocalDateTime createdDate;
     private boolean isActive;
 
-    public Promotion(User user, Category category, PromotionDetail promotionDetail, String title, Double oldPrice,
+    public Promotion( String categoryId, String title, Double oldPrice,
             Double discountPrice, Double discountPercentage, LocalDateTime startDate, LocalDateTime endDate,
             String featureImageUrl, String location, LocalDateTime createdDate, boolean isActive) {
-        this.user = user;
-        this.category = category;
-        this.promotionDetail = promotionDetail;
-        this.savedBy = new ArrayList<>();
+        this.categoryId = categoryId;
         this.title = title;
         this.oldPrice = oldPrice;
         this.discountPrice = discountPrice;

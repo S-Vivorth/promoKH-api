@@ -31,3 +31,4 @@ public class AddPromotionDTO {
     @JsonProperty("location")
     private String location;
 }
+

@@ -87,14 +87,24 @@ public class PromotionController {
 
 
 @GetMapping("/get")
-public ResponseEntity<?> getByCategory(@RequestParam String category,
+public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "25") int size) {
 
- 
+   if (category_Id == null || category_Id.isEmpty()) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
+        List<Promotion> promotionList = promotionPage.getContent();    
+        ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+                HttpStatus.OK.value(),
+                "success",
+                promotionList
+        );
+        return ResponseEntity.ok(responseDTO);
+    }                                 
     
     Pageable pageable = PageRequest.of(page, size);
-    Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category, pageable);
+    Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_Id, pageable);
     
     List<Promotion> promotionList = promotionPage.getContent();
     

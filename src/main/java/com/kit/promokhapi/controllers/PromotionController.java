@@ -2,20 +2,26 @@ package com.kit.promokhapi.controllers;
 
 import com.kit.promokhapi.dto.AddPromotionDTO;
 import com.kit.promokhapi.dto.ResponseDTO;
+
 import com.kit.promokhapi.models.PostPromoReqModel;
 import com.kit.promokhapi.models.Promotion;
 import com.kit.promokhapi.models.PromotionDetail;
 import com.kit.promokhapi.repository.PromotionDetailRepository;
 import com.kit.promokhapi.repository.PromotionRepository;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,6 +34,8 @@ public class PromotionController {
     PromotionRepository promotionRepository;
     @Autowired
     PromotionDetailRepository promotionDetailRepository;
+  
+
     @PostMapping("/add")
     public ResponseEntity<?> post(@Valid @RequestBody PostPromoReqModel reqModel) {
 
@@ -75,4 +83,28 @@ public class PromotionController {
 
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", addPromotionDTO));
     }
+
+
+
+@GetMapping("/get")
+public ResponseEntity<?> getByCategory(@RequestParam String category,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "25") int size) {
+
+ 
+    
+    Pageable pageable = PageRequest.of(page, size);
+    Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category, pageable);
+    
+    List<Promotion> promotionList = promotionPage.getContent();
+    
+    ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+            HttpStatus.OK.value(),
+            "success",
+            promotionList
+    );
+    
+    return ResponseEntity.ok(responseDTO);
 }
+}
+

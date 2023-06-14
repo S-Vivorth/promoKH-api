@@ -1,5 +1,6 @@
 package com.kit.promokhapi.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,16 +13,23 @@ import java.util.List;
 public class PromotionDetail {
     @Id
     private String id;
-
+    @JsonProperty("promotionId")
     private String promotionId;
+    @JsonProperty("promotion_detail")
     private String promotionDetail;
+    @JsonProperty("image_url_list")
     private List<String> imageUrlList;
+    @JsonProperty("contact_number")
     private String contactNumber;
+    @JsonProperty("facebook_name")
     private String facebookName;
+    @JsonProperty("promotion_url")
     private String promotionUrl;
     private Float latitude;
     private Float longitude;
+    @JsonProperty("created_date")
     private LocalDateTime createdDate;
+    @JsonProperty("is_active")
     private boolean isActive;
 
     public PromotionDetail(String promotionId, String promotionDetail, List<String> imageUrlList,

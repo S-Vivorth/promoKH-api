@@ -10,6 +10,7 @@ import com.kit.promokhapi.jwt.JwtHelper;
 import com.kit.promokhapi.repository.RefreshTokenRepository;
 import com.kit.promokhapi.repository.UserRepository;
 import com.kit.promokhapi.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +21,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/promo_kh/auth")
 public class AuthController {
@@ -60,7 +66,7 @@ public class AuthController {
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", tokenDTO));
     }
 
-    @PostMapping("register")
+    @PostMapping("/register")
     @Transactional
     public ResponseEntity<?> signup(@Valid @RequestBody SignupDTO dto) {
         User user = new User(dto.getEmail(), passwordEncoder.encode(dto.getPassword()));
@@ -78,7 +84,7 @@ public class AuthController {
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.CREATED.value(), "success", tokenDTO));
     }
 
-    @PostMapping("logout")
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody TokenDTO dto) {
         String refreshTokenString = dto.getRefreshToken();
         if (jwtHelper.validateRefreshToken(refreshTokenString)
@@ -90,7 +96,8 @@ public class AuthController {
 
         throw new BadCredentialsException("invalid token");
     }
-    @PostMapping("logout-all")
+
+    @PostMapping("/logout-all")
     public ResponseEntity<?> logoutAll(@RequestBody TokenDTO dto) {
         String refreshTokenString = dto.getRefreshToken();
         if (jwtHelper.validateRefreshToken(refreshTokenString)
@@ -104,7 +111,7 @@ public class AuthController {
         throw new BadCredentialsException("invalid token");
     }
 
-    @PostMapping("access-token")
+    @PostMapping("/access-token")
     public ResponseEntity<?> accessToken(@RequestBody TokenDTO dto) {
         String refreshTokenString = dto.getRefreshToken();
         if (jwtHelper.validateRefreshToken(refreshTokenString)
@@ -122,7 +129,7 @@ public class AuthController {
         throw new BadCredentialsException("invalid token");
     }
 
-    @PostMapping("refresh-token")
+    @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestBody TokenDTO dto) {
         String refreshTokenString = dto.getRefreshToken();
         if (jwtHelper.validateRefreshToken(refreshTokenString)

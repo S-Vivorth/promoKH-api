@@ -58,10 +58,15 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http.cors().and().csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(accessTokenEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.antMatchers("/promo_kh/auth/**").permitAll().anyRequest().authenticated());
+                .authorizeHttpRequests(auth -> auth.antMatchers("/promo_kh/auth/**").permitAll()); // permit all upcoming requests on /promo_kh/auth/** routes
+
+        // only authenticated user can access /promo_kh/promotion/add
+        http.authorizeHttpRequests(auth -> auth.antMatchers("/promo_kh/promotion/add").authenticated());
+
+
         http.addFilterBefore(apiTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(accessTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 

@@ -1,8 +1,10 @@
 package com.kit.promokhapi.controllers;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.kit.promokhapi.dto.AddPromotionDTO;
 import com.kit.promokhapi.dto.ResponseDTO;
 
+import com.kit.promokhapi.jwt.JwtHelper;
 import com.kit.promokhapi.models.PostPromoReqModel;
 import com.kit.promokhapi.models.Promotion;
 import com.kit.promokhapi.models.PromotionDetail;
@@ -10,11 +12,13 @@ import com.kit.promokhapi.repository.PromotionDetailRepository;
 import com.kit.promokhapi.repository.PromotionRepository;
 
 
+import com.kit.promokhapi.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,19 +28,24 @@ import javax.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/promo_kh/promotion")
+@RequestMapping("/promo_kh")
 public class PromotionController {
 
     @Autowired
     PromotionRepository promotionRepository;
     @Autowired
     PromotionDetailRepository promotionDetailRepository;
-  
 
-    @PostMapping("/add")
+    @Autowired
+    JwtHelper jwtHelper;
+
+    @Autowired
+    PromotionService promotionService;
+    @PostMapping("/promotion/add")
     public ResponseEntity<?> post(@Valid @RequestBody PostPromoReqModel reqModel) {
 
         Promotion promotion = new Promotion(
@@ -86,7 +95,7 @@ public class PromotionController {
 
 
 
-@GetMapping("/get")
+@GetMapping("/promotion/get")
 public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "25") int size) {
@@ -116,5 +125,37 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
     
     return ResponseEntity.ok(responseDTO);
 }
+    @PatchMapping("/user/posted_promotion/update")
+    public ResponseEntity<?> update(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                    @RequestBody Map<Object, Object> payload, @RequestParam("promotion_id") String promotionId) {
+
+        boolean isAuth = jwtHelper.validateAccessToken(authorization);
+        if (isAuth) {
+            promotionService.patch(payload, promotionId);
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", null));
+        }
+        else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+    }
+
+
+    @PostMapping("/user/posted_promotion/delete")
+    public  ResponseEntity<?> delete(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                     @RequestBody  Map<String, Object> payload) {
+        boolean isAuth = jwtHelper.validateAccessToken(authorization);
+        if (isAuth) {
+            try {
+                Promotion deletePromotion = promotionService.deleteById((String) payload.get("promotion_id"));
+                return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion has been deleted successfully.", deletePromotion));
+            }
+            catch (RuntimeException exc) {
+                return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion not found", null));
+            }
+        }
+        else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "unauthorized", null));
+        }
+    }
 }
 

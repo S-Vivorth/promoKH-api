@@ -57,4 +57,17 @@ public class PromotionService {
             throw new RuntimeException();
         }
     }
+
+    public PromotionDetail findByPromotionId(String promotionId) {
+        Optional<Promotion> promotion = promotionRepository.findById(promotionId);
+        if (promotion.isPresent()) {
+            Query query = new Query();
+            query.addCriteria(Criteria.where(StringHelper.toCamelCase("promotion_id")).is(promotionId));
+            PromotionDetail promotionDetail = mongoTemplate.findOne(query, PromotionDetail.class);
+            return promotionDetail;
+        }
+        else {
+            throw new RuntimeException();
+        }
+    }
 }

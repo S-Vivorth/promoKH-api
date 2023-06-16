@@ -157,5 +157,19 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "unauthorized", null));
         }
     }
+
+    @GetMapping("/promotion_detail/get")
+    public ResponseEntity<?> getPromotionDetail(@RequestParam String promotion_id) {
+
+        try {
+            PromotionDetail promotionDetail = promotionService.findByPromotionId(promotion_id);
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion detail has been fetched successfully.", promotionDetail));
+        }
+        catch (RuntimeException exc) {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion detail not found", null));
+        }
+
+
+    }
 }
 

@@ -46,51 +46,61 @@ public class PromotionController {
     @Autowired
     PromotionService promotionService;
     @PostMapping("/promotion/add")
-    public ResponseEntity<?> post(@Valid @RequestBody PostPromoReqModel reqModel) {
+    public ResponseEntity<?> post(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                  @Valid @RequestBody PostPromoReqModel reqModel) {
+        String token = authorization.replace("Bearer ", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+        if (isAuth) {
+            String userId = jwtHelper.getUserIdFromAccessToken(token);
+            Promotion promotion = new Promotion(
+                    userId,
+                    reqModel.getCategoryId(),
+                    reqModel.getTitle(),
+                    reqModel.getOldPrice(),
+                    reqModel.getDiscountPrice(),
+                    reqModel.getDiscountPercentage(),
+                    reqModel.getStartDate(),
+                    reqModel.getEndDate(),
+                    reqModel.getFeatureImageUrl(),
+                    reqModel.getLocation(),
+                    LocalDateTime.now(),
+                    true
+            );
+            promotionRepository.save(promotion);
 
-        Promotion promotion = new Promotion(
-                reqModel.getCategoryId(),
-                reqModel.getTitle(),
-                reqModel.getOldPrice(),
-                reqModel.getDiscountPrice(),
-                reqModel.getDiscountPercentage(),
-                reqModel.getStartDate(),
-                reqModel.getEndDate(),
-                reqModel.getFeatureImageUrl(),
-                reqModel.getLocation(),
-                LocalDateTime.now(),
-                true
-        );
-        promotionRepository.save(promotion);
+            PromotionDetail promotionDetail = new PromotionDetail(
+                    promotion.getId(),
+                    reqModel.getPromotionDetail(),
+                    reqModel.getImageUrlList(),
+                    reqModel.getContactNumber(),
+                    reqModel.getFacebookName(),
+                    reqModel.getPromotionUrl(),
+                    reqModel.getLongtitude(),
+                    reqModel.getLatitude(),
+                    LocalDateTime.now(),
+                    true
+            );
+            promotionDetailRepository.save(promotionDetail);
 
-        PromotionDetail promotionDetail = new PromotionDetail(
-                promotion.getId(),
-                reqModel.getPromotionDetail(),
-                reqModel.getImageUrlList(),
-                reqModel.getContactNumber(),
-                reqModel.getFacebookName(),
-                reqModel.getPromotionUrl(),
-                reqModel.getLongtitude(),
-                reqModel.getLatitude(),
-                LocalDateTime.now(),
-                true
-        );
-        promotionDetailRepository.save(promotionDetail);
+            AddPromotionDTO addPromotionDTO = new AddPromotionDTO(
+                    promotion.getId(),
+                    reqModel.getCategoryId(),
+                    reqModel.getTitle(),
+                    reqModel.getOldPrice(),
+                    reqModel.getDiscountPrice(),
+                    reqModel.getDiscountPercentage(),
+                    reqModel.getStartDate(),
+                    reqModel.getEndDate(),
+                    reqModel.getFeatureImageUrl(),
+                    reqModel.getLocation()
+            );
 
-        AddPromotionDTO addPromotionDTO = new AddPromotionDTO(
-                promotionDetail.getId(),
-                reqModel.getCategoryId(),
-                reqModel.getTitle(),
-                reqModel.getOldPrice(),
-                reqModel.getDiscountPrice(),
-                reqModel.getDiscountPercentage(),
-                reqModel.getStartDate(),
-                reqModel.getEndDate(),
-                reqModel.getFeatureImageUrl(),
-                reqModel.getLocation()
-        );
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", addPromotionDTO));
+        }
+        else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
 
-        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", addPromotionDTO));
     }
 
 

@@ -15,6 +15,8 @@ import java.util.List;
 public class Promotion {
     @Id
     private String id;
+    @JsonProperty("user_id")
+    private String userId;
     @JsonProperty("category_id")
     private String categoryId;
 
@@ -37,9 +39,10 @@ public class Promotion {
     @JsonProperty("is_active")
     private boolean isActive;
 
-    public Promotion( String categoryId, String title, Double oldPrice,
+    public Promotion(String userId, String categoryId, String title, Double oldPrice,
             Double discountPrice, Double discountPercentage, LocalDateTime startDate, LocalDateTime endDate,
             String featureImageUrl, String location, LocalDateTime createdDate, boolean isActive) {
+        this.userId = userId;
         this.categoryId = categoryId;
         this.title = title;
         this.oldPrice = oldPrice;

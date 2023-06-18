@@ -1,6 +1,5 @@
 package com.kit.promokhapi.controllers;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.kit.promokhapi.dto.AddPromotionDTO;
 import com.kit.promokhapi.dto.ResponseDTO;
 
@@ -32,10 +31,11 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 
-import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @CrossOrigin("*")
 @RestController
@@ -238,6 +238,29 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
         }
     }
+    @GetMapping("/saved_promotion/get")
+    public ResponseEntity<?> getSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                               @RequestParam("user_id") String user_id){
+        User user = userService.findById(user_id);
+        boolean isAuth = jwtHelper.validateAccessToken(authorization);
+        if (isAuth) {
+            List<String> savedPromotion = user.getSavedPromotionIdList();
+            List<Optional<Promotion>> savePromotion = new ArrayList<>();
+            for (String item: savedPromotion){
+                Optional<Promotion> promotion = promotionRepository.findById(item);
+                savePromotion.add(promotion);
+            }
+            ResponseDTO<List<Optional<Promotion>>> responseDTO = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "success",
+                    savePromotion
+            );
+            return ResponseEntity.ok(responseDTO);
+        }else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+    }
+
 
 }
 

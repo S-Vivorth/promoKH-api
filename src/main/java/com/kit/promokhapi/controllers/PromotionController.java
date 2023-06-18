@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -190,7 +191,8 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
     @Autowired
     MongoTemplate mongoTemplate;
     @GetMapping("/posted_promotion/get")
-    public ResponseEntity<?> getPostPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam String user_id) {
+    public ResponseEntity<?> getPostPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                              @RequestParam String user_id) {
 
         String token = authorization.replace("Bearer", "");
         boolean isAuth = jwtHelper.validateAccessToken(token);
@@ -208,7 +210,33 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
         }
 
-
+    }
+    @Autowired
+    UserService userService;
+    @Autowired
+    UserRepository userRepository;
+    @PostMapping("/saved_promotion/add")
+    public ResponseEntity<?> savePromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                           @Valid @RequestBody String savedPromotionId,
+                                           @RequestParam("user_id") String user_id) {
+        String token = authorization.replace("Bearer", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+        if (isAuth) {
+            User user = userService.findById(user_id);
+            String promotion_id = savedPromotionId.replaceAll("[^a-zA-Z0-9]", "")
+                    .replaceFirst("promotionid", "");
+            user.getSavedPromotionIdList().add(promotion_id);
+            userRepository.save(user);
+            List<String> savedPromotions = user.getSavedPromotionIdList();
+            ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "success",
+                    savedPromotions
+            );
+            return ResponseEntity.ok(responseDTO);
+        }else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
     }
 
 }

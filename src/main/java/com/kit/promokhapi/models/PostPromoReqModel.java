@@ -15,8 +15,6 @@ import java.util.List;
 @Document
 @Data
 public class PostPromoReqModel {
-    @Id
-    private String id;
     @JsonProperty("user_id")
     private String userId;
 

@@ -20,16 +20,16 @@ public class CategoryController {
 
     @Autowired
     CategorySerivce service;
-    
+
     // get all categories
     @GetMapping("promo_kh/category")
     public ResponseEntity<?> getAllCategories() {
 
-       ResponseDTO<List<Category>> responseDTO = new ResponseDTO<>(
-            HttpStatus.OK.value(),
-            "success",
-            service.getAllCategories()
-    );
-    return ResponseEntity.ok(responseDTO);
+        ResponseDTO<List<Category>> responseDTO = new ResponseDTO<>(
+                HttpStatus.OK.value(),
+                "success",
+                service.getAllCategories()
+        );
+        return ResponseEntity.ok(responseDTO);
     }
 }

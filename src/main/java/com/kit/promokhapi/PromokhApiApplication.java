@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SpringBootApplication
 @EnableMongoRepositories
-public class PromokhApiApplication {
+public class  PromokhApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(PromokhApiApplication.class, args);
     }

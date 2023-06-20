@@ -1,6 +1,5 @@
 package com.kit.promokhapi.controllers;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.kit.promokhapi.dto.AddPromotionDTO;
 import com.kit.promokhapi.dto.ResponseDTO;
 
@@ -8,16 +7,22 @@ import com.kit.promokhapi.jwt.JwtHelper;
 import com.kit.promokhapi.models.PostPromoReqModel;
 import com.kit.promokhapi.models.Promotion;
 import com.kit.promokhapi.models.PromotionDetail;
+import com.kit.promokhapi.models.User;
 import com.kit.promokhapi.repository.PromotionDetailRepository;
 import com.kit.promokhapi.repository.PromotionRepository;
 
 
+import com.kit.promokhapi.repository.UserRepository;
 import com.kit.promokhapi.service.PromotionService;
+import com.kit.promokhapi.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +32,10 @@ import javax.validation.Valid;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @CrossOrigin("*")
 @RestController
@@ -181,5 +188,82 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
 
 
     }
+    @Autowired
+    MongoTemplate mongoTemplate;
+    @GetMapping("/posted_promotion/get")
+    public ResponseEntity<?> getPostPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                              @RequestParam String user_id) {
+
+        String token = authorization.replace("Bearer", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+        if (isAuth) {
+            Query query = new Query();
+            query.addCriteria(Criteria.where("userId").is(user_id));
+            List<Promotion> promotionList = mongoTemplate.find(query, Promotion.class);
+            ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "success",
+                    promotionList
+            );
+            return ResponseEntity.ok(responseDTO);
+        } else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+
+    }
+    @Autowired
+    UserService userService;
+    @Autowired
+    UserRepository userRepository;
+    @PostMapping("/saved_promotion/add")
+    public ResponseEntity<?> savePromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                           @Valid @RequestBody String savedPromotionId,
+                                           @RequestParam("user_id") String user_id) {
+        String token = authorization.replace("Bearer", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+        if (isAuth) {
+            User user = userService.findById(user_id);
+            String promotion_id = savedPromotionId.replaceAll("[^a-zA-Z0-9]", "")
+                    .replaceFirst("promotionid", "");
+            user.getSavedPromotionIdList().add(promotion_id);
+            userRepository.save(user);
+            List<String> savedPromotions = user.getSavedPromotionIdList();
+            ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "success",
+                    savedPromotions
+            );
+            return ResponseEntity.ok(responseDTO);
+        }else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+    }
+    @GetMapping("/saved_promotion/get")
+    public ResponseEntity<?> getSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                               @RequestParam("user_id") String user_id){
+        User user = userService.findById(user_id);
+        boolean isAuth = jwtHelper.validateAccessToken(authorization);
+        if (isAuth) {
+            List<String> savedPromotion = user.getSavedPromotionIdList();
+            List<Optional<Promotion>> savePromotion = new ArrayList<>();
+            for (String item: savedPromotion){
+                Optional<Promotion> promotion = promotionRepository.findById(item);
+                savePromotion.add(promotion);
+            }
+            ResponseDTO<List<Optional<Promotion>>> responseDTO = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "success",
+                    savePromotion
+            );
+            return ResponseEntity.ok(responseDTO);
+        }else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+    }
+
+
 }
+
+
+
 

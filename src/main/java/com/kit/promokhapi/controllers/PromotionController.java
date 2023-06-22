@@ -113,11 +113,11 @@ public class PromotionController {
 
 
 @GetMapping("/promotion/get")
-public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
+public ResponseEntity<?> getByCategory(@RequestParam String category_id,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "25") int size) {
 
-   if (category_Id == null || category_Id.isEmpty()) {
+   if (category_id == null || category_id.isEmpty()) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
         List<Promotion> promotionList = promotionPage.getContent();    
@@ -130,7 +130,7 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
     }                                 
     
     Pageable pageable = PageRequest.of(page, size);
-    Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_Id, pageable);
+    Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_id, pageable);
     
     List<Promotion> promotionList = promotionPage.getContent();
     
@@ -261,7 +261,20 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
         }
     }
 
-
+    @GetMapping("/promotion/search")
+    public ResponseEntity<?> searchPromotion(@RequestParam String keyword,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "25") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Promotion> promotionPage = promotionService.search(keyword, pageable);
+        List<Promotion> promotionList = promotionPage.getContent();
+        ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+                HttpStatus.OK.value(),
+                "success",
+                promotionList
+        );
+        return ResponseEntity.ok(responseDTO);
+    }
 }
 
 

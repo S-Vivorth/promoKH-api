@@ -274,6 +274,38 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_Id,
         }
     }
 
+    @PostMapping("/saved_promotion/delete")
+    public ResponseEntity<?> deleteSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                                  @RequestBody Map<Object, Object> payload) {
+        String token = authorization.replace("Bearer ", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+
+        if (isAuth) {
+            String userId = jwtHelper.getUserIdFromAccessToken(token);
+            User user = userService.findById(userId);
+            List<String> savedPromotionIdList = user.getSavedPromotionIdList();
+            if (payload.get("promotion_id") != null) {
+                String promotionId = (String)payload.get("promotion_id");
+                if (savedPromotionIdList.contains(promotionId)) {
+                    savedPromotionIdList.remove(promotionId);
+                    user.setSavedPromotionIdList(savedPromotionIdList);
+                    userRepository.save(user);
+                    return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Saved promotion has been deleted successfully.", null));
+                }
+                else {
+                    return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion id not found.", null));
+                }
+
+            }
+            else {
+                return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.EXPECTATION_FAILED.value(), "promotion_id field not found", null));
+            }
+        }
+        else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+
+    }
 
 }
 

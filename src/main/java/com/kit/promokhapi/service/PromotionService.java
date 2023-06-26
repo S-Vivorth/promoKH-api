@@ -6,6 +6,8 @@ import com.kit.promokhapi.models.PromotionDetail;
 import com.kit.promokhapi.repository.PromotionDetailRepository;
 import com.kit.promokhapi.repository.PromotionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -68,5 +70,9 @@ public class PromotionService {
         else {
             throw new RuntimeException();
         }
+    }
+
+    public Page<Promotion> search(String keyword, Pageable pageable) {
+        return promotionRepository.findByTitleContainingIgnoreCase(keyword, pageable);
     }
 }

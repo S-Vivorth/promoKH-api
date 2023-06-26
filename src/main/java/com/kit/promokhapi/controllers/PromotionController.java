@@ -116,45 +116,31 @@ public class PromotionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size) {
 
-        if (category_Id == null || category_Id.isEmpty()) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
-            List<Promotion> promotionList = promotionPage.getContent();
-            ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
-                    HttpStatus.OK.value(),
-                    "success",
-                    promotionList);
-            return ResponseEntity.ok(responseDTO);
-        }
-
+   if (category_id == null || category_id.isEmpty()) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_Id, pageable);
-
+        Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
         List<Promotion> promotionList = promotionPage.getContent();
-
         ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
                 HttpStatus.OK.value(),
                 "success",
-                promotionList);
-
+                promotionList
+        );
         return ResponseEntity.ok(responseDTO);
     }
 
-    @GetMapping("/user/posted_promotion/get")
-    public ResponseEntity<?> getPostPromotion() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
-
-        Query query = new Query();
-        query.addCriteria(Criteria.where("userId").is(user.getId()));
-        List<Promotion> promotionList = mongoTemplate.find(query, Promotion.class);
-        ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
-                HttpStatus.OK.value(),
-                "success",
-                promotionList);
-        return ResponseEntity.ok(responseDTO);
-    }
-
+    Pageable pageable = PageRequest.of(page, size);
+    Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_id, pageable);
+    
+    List<Promotion> promotionList = promotionPage.getContent();
+    
+    ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+            HttpStatus.OK.value(),
+            "success",
+            promotionList
+    );
+    
+    return ResponseEntity.ok(responseDTO);
+}
     @PatchMapping("/user/posted_promotion/update")
     public ResponseEntity<?> update(@RequestBody Map<Object, Object> payload, @RequestParam String promotionId) {
         promotionService.patch(payload, promotionId);
@@ -183,7 +169,26 @@ public class PromotionController {
                     .ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion detail not found", null));
         }
     }
+    @GetMapping("/posted_promotion/get")
+    public ResponseEntity<?> getPostPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
 
+        String token = authorization.replace("Bearer", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+        if (isAuth) {
+            String userId = jwtHelper.getUserIdFromAccessToken(token);
+            Query query = new Query();
+            query.addCriteria(Criteria.where("userId").is(userId));
+            List<Promotion> promotionList = mongoTemplate.find(query, Promotion.class);
+            ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "success",
+                    promotionList
+            );
+            return ResponseEntity.ok(responseDTO);
+        } else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+    }
     @PostMapping("/saved_promotion/add")
     public ResponseEntity<?> savePromotion(@Valid @RequestBody SavePromotionInputDTO payload) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -227,7 +232,20 @@ public class PromotionController {
                 savePromotion);
         return ResponseEntity.ok(responseDTO);
     }
-
+    @GetMapping("/promotion/search")
+    public ResponseEntity<?> searchPromotion(@RequestParam String keyword,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "25") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Promotion> promotionPage = promotionService.search(keyword, pageable);
+        List<Promotion> promotionList = promotionPage.getContent();
+        ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+                HttpStatus.OK.value(),
+                "success",
+                promotionList
+        );
+        return ResponseEntity.ok(responseDTO);
+    }
     @DeleteMapping("/saved_promotion/delete")
     public ResponseEntity<?> deleteSavedPromotion(@RequestParam String promotionId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

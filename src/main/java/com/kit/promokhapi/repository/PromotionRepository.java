@@ -14,6 +14,8 @@ public interface PromotionRepository extends MongoRepository<Promotion, String> 
 
     Page<Promotion> findByCategoryId(String categoryId, Pageable pageable);
 
+    Page<Promotion> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
+
 
 
 

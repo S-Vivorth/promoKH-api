@@ -191,14 +191,14 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_id,
     @Autowired
     MongoTemplate mongoTemplate;
     @GetMapping("/posted_promotion/get")
-    public ResponseEntity<?> getPostPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-                                              @RequestParam String user_id) {
+    public ResponseEntity<?> getPostPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
 
         String token = authorization.replace("Bearer", "");
         boolean isAuth = jwtHelper.validateAccessToken(token);
         if (isAuth) {
+            String userId = jwtHelper.getUserIdFromAccessToken(token);
             Query query = new Query();
-            query.addCriteria(Criteria.where("userId").is(user_id));
+            query.addCriteria(Criteria.where("userId").is(userId));
             List<Promotion> promotionList = mongoTemplate.find(query, Promotion.class);
             ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
                     HttpStatus.OK.value(),
@@ -216,33 +216,46 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_id,
     @Autowired
     UserRepository userRepository;
     @PostMapping("/saved_promotion/add")
-    public ResponseEntity<?> savePromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-                                           @Valid @RequestBody String savedPromotionId,
-                                           @RequestParam("user_id") String user_id) {
+    public ResponseEntity<?> savePromotion( @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                           @Valid @RequestBody String savedPromotionId) {
         String token = authorization.replace("Bearer", "");
+        String userId = jwtHelper.getUserIdFromAccessToken(token);
         boolean isAuth = jwtHelper.validateAccessToken(token);
         if (isAuth) {
-            User user = userService.findById(user_id);
+            User user = userService.findById(userId);
             String promotion_id = savedPromotionId.replaceAll("[^a-zA-Z0-9]", "")
                     .replaceFirst("promotionid", "");
-            user.getSavedPromotionIdList().add(promotion_id);
-            userRepository.save(user);
             List<String> savedPromotions = user.getSavedPromotionIdList();
-            ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
-                    HttpStatus.OK.value(),
-                    "success",
-                    savedPromotions
-            );
-            return ResponseEntity.ok(responseDTO);
-        }else {
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+            for (String item: savedPromotions){
+                if (!promotion_id.equals(item)){
+                    user.getSavedPromotionIdList().add(promotion_id);
+                    userRepository.save(user);
+                    ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
+                            HttpStatus.OK.value(),
+                            "success",
+                            savedPromotions
+                    );
+                    return ResponseEntity.ok(responseDTO);
+                }else {
+                    ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
+                            HttpStatus.OK.value(),
+                            "Already Saved",
+                            savedPromotions
+                    );
+                    return ResponseEntity.ok(responseDTO);
+                }
+            }
         }
+        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
     }
     @GetMapping("/saved_promotion/get")
-    public ResponseEntity<?> getSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-                                               @RequestParam("user_id") String user_id){
-        User user = userService.findById(user_id);
-        boolean isAuth = jwtHelper.validateAccessToken(authorization);
+    public ResponseEntity<?> getSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
+                                               ){
+
+        String token = authorization.replace("Bearer", "");
+        String userId = jwtHelper.getUserIdFromAccessToken(token);
+        User user = userService.findById(userId);
+        boolean isAuth = jwtHelper.validateAccessToken(token);
         if (isAuth) {
             List<String> savedPromotion = user.getSavedPromotionIdList();
             List<Optional<Promotion>> savePromotion = new ArrayList<>();
@@ -275,6 +288,39 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_id,
         );
         return ResponseEntity.ok(responseDTO);
     }
+    @PostMapping("/saved_promotion/delete")
+    public ResponseEntity<?> deleteSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                                  @RequestBody Map<Object, Object> payload) {
+        String token = authorization.replace("Bearer ", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+
+        if (isAuth) {
+            String userId = jwtHelper.getUserIdFromAccessToken(token);
+            User user = userService.findById(userId);
+            List<String> savedPromotionIdList = user.getSavedPromotionIdList();
+            if (payload.get("promotion_id") != null) {
+                String promotionId = (String)payload.get("promotion_id");
+                if (savedPromotionIdList.contains(promotionId)) {
+                    savedPromotionIdList.remove(promotionId);
+                    user.setSavedPromotionIdList(savedPromotionIdList);
+                    userRepository.save(user);
+                    return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Saved promotion has been deleted successfully.", null));
+                }
+                else {
+                    return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion id not found.", null));
+                }
+
+            }
+            else {
+                return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.EXPECTATION_FAILED.value(), "promotion_id field not found", null));
+            }
+        }
+        else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+
+    }
+
 }
 
 

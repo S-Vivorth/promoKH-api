@@ -112,7 +112,7 @@ public class PromotionController {
     }
 
     @GetMapping("/promotion/get")
-    public ResponseEntity<?> getByCategory(@RequestParam(required = false) String category_Id,
+    public ResponseEntity<?> getByCategory(@RequestParam(required = false) String category_id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size) {
 
@@ -170,24 +170,18 @@ public class PromotionController {
         }
     }
     @GetMapping("/posted_promotion/get")
-    public ResponseEntity<?> getPostPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+    public ResponseEntity<?> getPostPromotion() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
 
-        String token = authorization.replace("Bearer", "");
-        boolean isAuth = jwtHelper.validateAccessToken(token);
-        if (isAuth) {
-            String userId = jwtHelper.getUserIdFromAccessToken(token);
-            Query query = new Query();
-            query.addCriteria(Criteria.where("userId").is(userId));
-            List<Promotion> promotionList = mongoTemplate.find(query, Promotion.class);
-            ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
-                    HttpStatus.OK.value(),
-                    "success",
-                    promotionList
-            );
-            return ResponseEntity.ok(responseDTO);
-        } else {
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
-        }
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userId").is(user.getId()));
+        List<Promotion> promotionList = mongoTemplate.find(query, Promotion.class);
+        ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
+                HttpStatus.OK.value(),
+                "success",
+                promotionList);
+        return ResponseEntity.ok(responseDTO);
     }
     @PostMapping("/saved_promotion/add")
     public ResponseEntity<?> savePromotion(@Valid @RequestBody SavePromotionInputDTO payload) {

@@ -192,20 +192,25 @@ public class PromotionController {
         try {
             Optional<Promotion> savePromotion = promotionRepository.findById(promotion_id);
             List<String> savedPromotions = user.getSavedPromotionIdList();
-            for (String item : savedPromotions) {
-                if (promotion_id.equals(item)) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT.value())
-                            .body(new ResponseDTO<>(HttpStatus.CONFLICT.value(), "Already Saved", null));
-                }
-            }
+            for (String item: savedPromotions){
+                if (promotion_id.equals(item)){
+                    ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
+                            HttpStatus.OK.value(),
+                            "Already Saved",
+                            savedPromotions
+                    );
+                    return ResponseEntity.ok(responseDTO);
+
+            }}
             user.getSavedPromotionIdList().add(promotion_id);
             userRepository.save(user);
-            ResponseDTO<Optional<Promotion>> responseDTO = new ResponseDTO<Optional<Promotion>>(
+            ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
                     HttpStatus.OK.value(),
                     "success",
-                    savePromotion);
+                    savedPromotions
+            );
             return ResponseEntity.ok(responseDTO);
-        } catch (RuntimeException exc) {
+    } catch (RuntimeException exc) {
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion not found", null));
         }
     }

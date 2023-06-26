@@ -61,11 +61,13 @@ public class WebSecurityConfig {
         http.cors().and().csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(accessTokenEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.antMatchers("/promo_kh/auth/**").permitAll()); // permit all upcoming requests on /promo_kh/auth/** routes
-
-        // only authenticated user can access /promo_kh/promotion/add
-        http.authorizeHttpRequests(auth -> auth.antMatchers("/promo_kh/promotion/add").authenticated());
-
+                .authorizeHttpRequests(
+                        auth -> auth
+                                .antMatchers("/promo_kh/auth/**", "/promo_kh/promo_kh/category",
+                                        "/promo_kh/promotion_detail/get",
+                                        "/promo_kh/promotion/get")
+                                .permitAll()
+                                .anyRequest().authenticated());
 
         http.addFilterBefore(apiTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(accessTokenFilter(), UsernamePasswordAuthenticationFilter.class);

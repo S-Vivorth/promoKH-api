@@ -1,7 +1,10 @@
 package com.kit.promokhapi.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import lombok.Data;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -49,11 +52,13 @@ public class PostPromoReqModel {
 
     private Float longtitude;
 
+
     public PostPromoReqModel(String userId, String categoryId, String title, Double oldPrice,
-            Double discountPrice, Double discountPercentage, LocalDateTime startDate, LocalDateTime endDate,
-            String featureImageUrl, List<String> imageUrlList, String location, String promotionDetail,
-            String contactNumber, String facebookName, String promotionUrl, Float latitude,
-            Float longtitude) {
+                             Double discountPrice, Double discountPercentage, LocalDateTime startDate, LocalDateTime endDate,
+                             String featureImageUrl,List<String> imageUrlList, String location,String promotionDetail,
+                             String contactNumber,String facebookName, String promotionUrl, Float latitude,
+                             Float longtitude
+                             ) {
         this.userId = userId;
         this.categoryId = categoryId;
         this.savedBy = new ArrayList<>();
@@ -73,5 +78,6 @@ public class PostPromoReqModel {
         this.latitude = latitude;
         this.longtitude = longtitude;
     }
+
 
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kit.promokhapi.dto.ResponseDTO;
 import com.kit.promokhapi.models.Category;
+import com.kit.promokhapi.models.Promotion;
 import com.kit.promokhapi.service.CategorySerivce;
 
 @CrossOrigin("*")
@@ -27,7 +28,8 @@ public class CategoryController {
         ResponseDTO<List<Category>> responseDTO = new ResponseDTO<>(
                 HttpStatus.OK.value(),
                 "success",
-                service.getAllCategories());
+                service.getAllCategories()
+        );
         return ResponseEntity.ok(responseDTO);
     }
 }

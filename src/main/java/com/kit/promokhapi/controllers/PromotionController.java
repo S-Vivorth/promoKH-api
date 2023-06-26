@@ -227,29 +227,30 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_id,
                     .replaceFirst("promotionid", "");
             List<String> savedPromotions = user.getSavedPromotionIdList();
             for (String item: savedPromotions){
-                if (promotion_id.equals(item)){
+                if (!promotion_id.equals(item)){
+                    user.getSavedPromotionIdList().add(promotion_id);
+                    userRepository.save(user);
+                    ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
+                            HttpStatus.OK.value(),
+                            "success",
+                            savedPromotions
+                    );
+                    return ResponseEntity.ok(responseDTO);
+                }else {
                     ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
                             HttpStatus.OK.value(),
                             "Already Saved",
                             savedPromotions
                     );
                     return ResponseEntity.ok(responseDTO);
-
-            }}
-            user.getSavedPromotionIdList().add(promotion_id);
-            userRepository.save(user);
-            ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
-                    HttpStatus.OK.value(),
-                    "success",
-                    savedPromotions
-            );
-            return ResponseEntity.ok(responseDTO);
-    } else {
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+                }
+            }
         }
+        return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
     }
     @GetMapping("/saved_promotion/get")
-    public ResponseEntity<?> getSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization){
+    public ResponseEntity<?> getSavedPromotion(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
+                                               ){
 
         String token = authorization.replace("Bearer", "");
         String userId = jwtHelper.getUserIdFromAccessToken(token);

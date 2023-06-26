@@ -31,11 +31,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin("*")
 @RestController
@@ -99,7 +97,8 @@ public class PromotionController {
                     reqModel.getStartDate(),
                     reqModel.getEndDate(),
                     reqModel.getFeatureImageUrl(),
-                    reqModel.getLocation()
+                    reqModel.getLocation(),
+                    promotionDetail
             );
 
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", addPromotionDTO));
@@ -177,15 +176,17 @@ public ResponseEntity<?> getByCategory(@RequestParam String category_id,
 
     @GetMapping("/promotion_detail/get")
     public ResponseEntity<?> getPromotionDetail(@RequestParam String promotion_id) {
-
-        try {
+        Optional<Promotion> promotion = promotionRepository.findById(promotion_id);
+        if (promotion.isPresent()) {
             PromotionDetail promotionDetail = promotionService.findByPromotionId(promotion_id);
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion detail has been fetched successfully.", promotionDetail));
+            Map<String, Object> responseObj = new HashMap<>();
+            responseObj.put("promotion", promotion);
+            responseObj.put("promotion_detail", promotionDetail);
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion detail has been fetched successfully.", responseObj));
         }
-        catch (RuntimeException exc) {
+        else {
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion detail not found", null));
         }
-
 
     }
     @Autowired

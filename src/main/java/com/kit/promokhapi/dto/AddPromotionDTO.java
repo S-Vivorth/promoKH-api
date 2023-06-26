@@ -1,6 +1,8 @@
 package com.kit.promokhapi.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.kit.promokhapi.models.Promotion;
+import com.kit.promokhapi.models.PromotionDetail;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,5 +32,7 @@ public class AddPromotionDTO {
     private String featureImageUrl;
     @JsonProperty("location")
     private String location;
+    @JsonProperty("promotion_detail")
+    private PromotionDetail promotionDetail;
 }
 

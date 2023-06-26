@@ -31,10 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @CrossOrigin("*")
 @RestController
@@ -105,7 +102,8 @@ public class PromotionController {
                 reqModel.getStartDate(),
                 reqModel.getEndDate(),
                 reqModel.getFeatureImageUrl(),
-                reqModel.getLocation());
+                reqModel.getLocation(),
+                promotionDetail);
 
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", addPromotionDTO));
 
@@ -159,15 +157,19 @@ public class PromotionController {
     }
 
     @GetMapping("/promotion_detail/get")
-    public ResponseEntity<?> getPromotionDetail(@RequestParam String promotionId) {
-        try {
-            PromotionDetail promotionDetail = promotionService.findByPromotionId(promotionId);
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(),
-                    "Promotion detail has been fetched successfully.", promotionDetail));
-        } catch (RuntimeException exc) {
-            return ResponseEntity
-                    .ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion detail not found", null));
+    public ResponseEntity<?> getPromotionDetail(@RequestParam String promotion_id) {
+        Optional<Promotion> promotion = promotionRepository.findById(promotion_id);
+        if (promotion.isPresent()) {
+            PromotionDetail promotionDetail = promotionService.findByPromotionId(promotion_id);
+            Map<String, Object> responseObj = new HashMap<>();
+            responseObj.put("promotion", promotion);
+            responseObj.put("promotion_detail", promotionDetail);
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion detail has been fetched successfully.", responseObj));
         }
+        else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion detail not found", null));
+        }
+
     }
     @GetMapping("/posted_promotion/get")
     public ResponseEntity<?> getPostPromotion() {

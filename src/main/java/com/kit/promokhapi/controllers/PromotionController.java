@@ -11,6 +11,7 @@ import com.kit.promokhapi.models.User;
 import com.kit.promokhapi.repository.PromotionDetailRepository;
 import com.kit.promokhapi.repository.PromotionRepository;
 
+
 import com.kit.promokhapi.repository.UserRepository;
 import com.kit.promokhapi.service.PromotionService;
 import com.kit.promokhapi.service.UserService;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -29,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -118,26 +121,26 @@ public class PromotionController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
         List<Promotion> promotionList = promotionPage.getContent();
-        ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
-                HttpStatus.OK.value(),
-                "success",
-                promotionList
-        );
-        return ResponseEntity.ok(responseDTO);
+        long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", HttpStatus.OK.value());
+        response.put("message", "success");
+        response.put("totalElements", totalElements);
+        response.put("data", promotionList);
+        return ResponseEntity.ok(response);
     }
 
     Pageable pageable = PageRequest.of(page, size);
     Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_id, pageable);
     
     List<Promotion> promotionList = promotionPage.getContent();
-    
-    ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
-            HttpStatus.OK.value(),
-            "success",
-            promotionList
-    );
-    
-    return ResponseEntity.ok(responseDTO);
+       long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", HttpStatus.OK.value());
+        response.put("message", "success");
+        response.put("totalElements", totalElements);
+        response.put("data", promotionList);
+        return ResponseEntity.ok(response);
 }
     @PatchMapping("/user/posted_promotion/update")
     public ResponseEntity<?> update(@RequestBody Map<Object, Object> payload, @RequestParam String promotionId) {
@@ -234,18 +237,21 @@ public class PromotionController {
         return ResponseEntity.ok(responseDTO);
     }
     @GetMapping("/promotion/search")
-    public ResponseEntity<?> searchPromotion(@RequestParam String keyword,
+    public ResponseEntity<?> searchPromotion(@RequestParam String query,
                                              @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "25") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Promotion> promotionPage = promotionService.search(keyword, pageable);
+        Page<Promotion> promotionPage = promotionService.search(query, pageable);
         List<Promotion> promotionList = promotionPage.getContent();
-        ResponseDTO<List<Promotion>> responseDTO = new ResponseDTO<>(
-                HttpStatus.OK.value(),
-                "success",
-                promotionList
-        );
-        return ResponseEntity.ok(responseDTO);
+       long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", HttpStatus.OK.value());
+        response.put("message", "success");
+        response.put("totalElements", totalElements);
+        response.put("data", promotionList);
+  
+
+        return ResponseEntity.ok(response);
     }
     @DeleteMapping("/saved_promotion/delete")
     public ResponseEntity<?> deleteSavedPromotion(@RequestParam String promotionId) {

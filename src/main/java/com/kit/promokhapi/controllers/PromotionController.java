@@ -270,4 +270,31 @@ public class PromotionController {
                     .ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion id not found.", null));
         }
     }
+
+    @PatchMapping("promotion_detail/update")
+    public ResponseEntity<?> updatePromotionDetail(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                                   @Valid @RequestBody PromotionDetail promotionDetail,
+                                                   @RequestParam("promotion_id") String promotionId ){
+        String token = authorization.replace("Bearer", "");
+        boolean isAuth = jwtHelper.validateAccessToken(token);
+        if (isAuth){
+            PromotionDetail promotion = promotionService.findByPromotionId(promotionId);
+            promotion.setContactNumber(promotionDetail.getContactNumber());
+            promotion.setFacebookName(promotionDetail.getFacebookName());
+            promotion.setPromotionDetail(promotionDetail.getPromotionDetail());
+            promotion.setPromotionUrl(promotionDetail.getPromotionUrl());
+            promotion.setImageUrlList(promotionDetail.getImageUrlList());
+            promotion.setLatitude(promotionDetail.getLatitude());
+            promotion.setLongitude(promotionDetail.getLongitude());
+            promotion.setCreatedDate(promotionDetail.getCreatedDate());
+            promotion.setActive(promotionDetail.isActive());
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion detail has been updated successfully.", promotion));
+
+        }else {
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
+        }
+
+    }
+
+
 }

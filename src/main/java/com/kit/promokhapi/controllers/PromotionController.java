@@ -142,13 +142,13 @@ public class PromotionController {
         response.put("data", promotionList);
         return ResponseEntity.ok(response);
 }
-    @PatchMapping("/user/posted_promotion/update")
+    @PatchMapping("/posted_promotion/update")
     public ResponseEntity<?> update(@RequestBody Map<Object, Object> payload, @RequestParam String promotionId) {
         promotionService.patch(payload, promotionId);
         return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "success", null));
     }
 
-    @DeleteMapping("/user/posted_promotion/delete")
+    @DeleteMapping("/posted_promotion/delete")
     public ResponseEntity<?> delete(@RequestParam String promotionId) {
         try {
             Promotion deletePromotion = promotionService.deleteById(promotionId);

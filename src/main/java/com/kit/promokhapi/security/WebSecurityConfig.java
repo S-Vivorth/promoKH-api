@@ -65,7 +65,7 @@ public class WebSecurityConfig {
                         auth -> auth
                                 .antMatchers("/promo_kh/auth/**", "/promo_kh/promo_kh/category",
                                         "/promo_kh/promotion_detail/get",
-                                        "/promo_kh/promotion/get")
+                                        "/promo_kh/promotion/get","/promo_kh/category")
                                 .permitAll()
                                 .anyRequest().authenticated());
 

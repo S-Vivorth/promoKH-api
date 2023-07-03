@@ -67,7 +67,7 @@ public class WebSecurityConfig {
                                         "/promo_kh/promotion_detail/get",
                                         "/promo_kh/promotion/get",
                                         "/promo_kh/category",
-                                        "promo_kh/promotion/search")
+                                        "/promo_kh/promotion/search")
                                 .permitAll()
                                 .anyRequest().authenticated());
 

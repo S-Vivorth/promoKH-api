@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -118,7 +119,7 @@ public class PromotionController {
             @RequestParam(defaultValue = "25") int size) {
 
    if (category_id == null || category_id.isEmpty()) {
-        Pageable pageable = PageRequest.of(page, size);
+       Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
         Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
         List<Promotion> promotionList = promotionPage.getContent();
         long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
@@ -130,9 +131,9 @@ public class PromotionController {
         return ResponseEntity.ok(response);
     }
 
-    Pageable pageable = PageRequest.of(page, size);
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
     Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_id, pageable);
-    
+
     List<Promotion> promotionList = promotionPage.getContent();
        long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
         Map<String, Object> response = new LinkedHashMap<>();
@@ -155,7 +156,6 @@ public class PromotionController {
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(),
                     "Promotion has been deleted successfully.", deletePromotion));
         } catch (RuntimeException exc) {
-
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion not found", null));
         }
     }
@@ -250,10 +250,12 @@ public class PromotionController {
         response.put("message", "success");
         response.put("totalElements", totalElements);
         response.put("data", promotionList);
-  
+
 
         return ResponseEntity.ok(response);
     }
+
+
     @DeleteMapping("/saved_promotion/delete")
     public ResponseEntity<?> deleteSavedPromotion(@RequestParam String promotionId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

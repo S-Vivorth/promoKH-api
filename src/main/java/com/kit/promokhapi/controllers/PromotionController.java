@@ -155,6 +155,7 @@ public class PromotionController {
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(),
                     "Promotion has been deleted successfully.", deletePromotion));
         } catch (RuntimeException exc) {
+
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion not found", null));
         }
     }

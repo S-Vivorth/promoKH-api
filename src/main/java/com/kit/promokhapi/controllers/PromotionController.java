@@ -11,7 +11,6 @@ import com.kit.promokhapi.models.User;
 import com.kit.promokhapi.repository.PromotionDetailRepository;
 import com.kit.promokhapi.repository.PromotionRepository;
 
-
 import com.kit.promokhapi.repository.UserRepository;
 import com.kit.promokhapi.service.PromotionService;
 import com.kit.promokhapi.service.UserService;
@@ -31,7 +30,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -117,9 +115,22 @@ public class PromotionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size) {
 
-   if (category_id == null || category_id.isEmpty()) {
+        if (category_id == null || category_id.isEmpty()) {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
+            List<Promotion> promotionList = promotionPage.getContent();
+            long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", HttpStatus.OK.value());
+            response.put("message", "success");
+            response.put("totalElements", totalElements);
+            response.put("data", promotionList);
+            return ResponseEntity.ok(response);
+        }
+
         Pageable pageable = PageRequest.of(page, size);
-        Page<Promotion> promotionPage = promotionRepository.findAll(pageable);
+        Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_id, pageable);
+
         List<Promotion> promotionList = promotionPage.getContent();
         long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
         Map<String, Object> response = new LinkedHashMap<>();
@@ -130,18 +141,6 @@ public class PromotionController {
         return ResponseEntity.ok(response);
     }
 
-    Pageable pageable = PageRequest.of(page, size);
-    Page<Promotion> promotionPage = promotionRepository.findByCategoryId(category_id, pageable);
-    
-    List<Promotion> promotionList = promotionPage.getContent();
-       long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("status", HttpStatus.OK.value());
-        response.put("message", "success");
-        response.put("totalElements", totalElements);
-        response.put("data", promotionList);
-        return ResponseEntity.ok(response);
-}
     @PatchMapping("/posted_promotion/update")
     public ResponseEntity<?> update(@RequestBody Map<Object, Object> payload, @RequestParam String promotionId) {
         promotionService.patch(payload, promotionId);
@@ -167,13 +166,15 @@ public class PromotionController {
             Map<String, Object> responseObj = new HashMap<>();
             responseObj.put("promotion", promotion);
             responseObj.put("promotion_detail", promotionDetail);
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion detail has been fetched successfully.", responseObj));
-        }
-        else {
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion detail not found", null));
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(),
+                    "Promotion detail has been fetched successfully.", responseObj));
+        } else {
+            return ResponseEntity
+                    .ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion detail not found", null));
         }
 
     }
+
     @GetMapping("/posted_promotion/get")
     public ResponseEntity<?> getPostPromotion() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -188,6 +189,7 @@ public class PromotionController {
                 promotionList);
         return ResponseEntity.ok(responseDTO);
     }
+
     @PostMapping("/saved_promotion/add")
     public ResponseEntity<?> savePromotion(@Valid @RequestBody SavePromotionInputDTO payload) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -197,25 +199,24 @@ public class PromotionController {
         try {
             Optional<Promotion> savePromotion = promotionRepository.findById(promotion_id);
             List<String> savedPromotions = user.getSavedPromotionIdList();
-            for (String item: savedPromotions){
-                if (promotion_id.equals(item)){
+            for (String item : savedPromotions) {
+                if (promotion_id.equals(item)) {
                     ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
                             HttpStatus.OK.value(),
                             "Already Saved",
-                            savedPromotions
-                    );
+                            savedPromotions);
                     return ResponseEntity.ok(responseDTO);
 
-            }}
+                }
+            }
             user.getSavedPromotionIdList().add(promotion_id);
             userRepository.save(user);
             ResponseDTO<List<String>> responseDTO = new ResponseDTO<>(
                     HttpStatus.OK.value(),
                     "success",
-                    savedPromotions
-            );
+                    savedPromotions);
             return ResponseEntity.ok(responseDTO);
-    } catch (RuntimeException exc) {
+        } catch (RuntimeException exc) {
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.NOT_FOUND.value(), "Promotion not found", null));
         }
     }
@@ -236,23 +237,24 @@ public class PromotionController {
                 savePromotion);
         return ResponseEntity.ok(responseDTO);
     }
+
     @GetMapping("/promotion/search")
     public ResponseEntity<?> searchPromotion(@RequestParam String query,
-                                             @RequestParam(defaultValue = "0") int page,
-                                             @RequestParam(defaultValue = "25") int size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Promotion> promotionPage = promotionService.search(query, pageable);
         List<Promotion> promotionList = promotionPage.getContent();
-       long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
+        long totalElements = promotionPage.getTotalElements(); // Get the total number of elements
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", HttpStatus.OK.value());
         response.put("message", "success");
         response.put("totalElements", totalElements);
         response.put("data", promotionList);
-  
 
         return ResponseEntity.ok(response);
     }
+
     @DeleteMapping("/saved_promotion/delete")
     public ResponseEntity<?> deleteSavedPromotion(@RequestParam String promotionId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -273,11 +275,11 @@ public class PromotionController {
 
     @PatchMapping("promotion_detail/update")
     public ResponseEntity<?> updatePromotionDetail(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-                                                   @Valid @RequestBody PromotionDetail promotionDetail,
-                                                   @RequestParam("promotion_id") String promotionId ){
+            @Valid @RequestBody PromotionDetail promotionDetail,
+            @RequestParam("promotion_id") String promotionId) {
         String token = authorization.replace("Bearer", "");
         boolean isAuth = jwtHelper.validateAccessToken(token);
-        if (isAuth){
+        if (isAuth) {
             PromotionDetail promotion = promotionService.findByPromotionId(promotionId);
             promotion.setContactNumber(promotionDetail.getContactNumber());
             promotion.setFacebookName(promotionDetail.getFacebookName());
@@ -288,13 +290,13 @@ public class PromotionController {
             promotion.setLongitude(promotionDetail.getLongitude());
             promotion.setCreatedDate(promotionDetail.getCreatedDate());
             promotion.setActive(promotionDetail.isActive());
-            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(), "Promotion detail has been updated successfully.", promotion));
+            return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.OK.value(),
+                    "Promotion detail has been updated successfully.", promotion));
 
-        }else {
+        } else {
             return ResponseEntity.ok(new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "UNAUTHORIZED", null));
         }
 
     }
-
 
 }

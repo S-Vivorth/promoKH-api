@@ -13,11 +13,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Optional;
+
 @Service
 public class PromotionService {
     @Autowired
@@ -27,12 +27,13 @@ public class PromotionService {
     MongoTemplate mongoTemplate;
     @Autowired
     PromotionDetailRepository promotionDetailRepository;
+
     public void patch(Map<Object, Object> fields, String promotionId) {
         Optional<Promotion> promotionDb = promotionRepository.findById(promotionId);
         if (promotionDb.isPresent()) {
             fields.forEach((key, value) -> {
-                System.out.println(StringHelper.toCamelCase((String)key));
-                Field field = ReflectionUtils.findField(Promotion.class, StringHelper.toCamelCase((String)key));
+                System.out.println(StringHelper.toCamelCase((String) key));
+                Field field = ReflectionUtils.findField(Promotion.class, StringHelper.toCamelCase((String) key));
                 field.setAccessible(true);
                 ReflectionUtils.setField(field, promotionDb.get(), value);
             });
@@ -54,8 +55,7 @@ public class PromotionService {
             mongoTemplate.findAndRemove(query, PromotionDetail.class);
 
             return promotion.get();
-        }
-        else {
+        } else {
             throw new RuntimeException();
         }
     }

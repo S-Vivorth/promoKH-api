@@ -18,7 +18,11 @@ WORKDIR /app
 
 # Copy the JAR file built by Spring Boot from the build stage to the runtime container
 COPY --from=build /app/build/libs/promoKH-api-0.0.1-SNAPSHOT.jar app.jar
-COPY .env /app/env.properties
+# Create a script to fetch environment variables from Railway and generate env.properties
+RUN echo "#!/bin/bash" > /app/fetch_env.sh \
+    && echo "echo \"Fetching environment variables from Railway...\"" >> /app/fetch_env.sh \
+    && echo "railway variables get --format properties > env.properties" >> /app/fetch_env.sh \
+    && chmod +x /app/fetch_env.sh
 
 # Expose the port that your Spring Boot application listens on
 EXPOSE 8080

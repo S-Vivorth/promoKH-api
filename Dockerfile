@@ -18,7 +18,7 @@ WORKDIR /app
 
 # Copy the JAR file built by Spring Boot from the build stage to the runtime container
 COPY --from=build /app/build/libs/promoKH-api-0.0.1-SNAPSHOT.jar app.jar
-COPY env.properties /app/env.properties
+COPY .env /app/env.properties
 
 # Expose the port that your Spring Boot application listens on
 EXPOSE 8080
